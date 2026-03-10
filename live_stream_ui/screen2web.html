@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>局部投屏演示</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* 这就是你要投屏到的“特定区域” */
+      #screen-share-area {
+        width: 640px;
+        height: 360px;
+        background-color: #000;
+        border: 2px dashed #666;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        margin-top: 20px;
+        position: relative;
+      }
+
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain; /* 保持比例 */
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>电脑屏幕投屏到指定区域</h2>
+    <button id="startBtn">开始共享屏幕</button>
+
+    <!-- 目标区域 -->
+    <div id="screen-share-area">
+      <span id="placeholder">视频将在此处显示</span>
+      <video
+        id="videoElement"
+        autoplay
+        playsinline
+        style="display: none"
+      ></video>
+    </div>
+
+    <script>
+      const startBtn = document.getElementById("startBtn");
+      const videoElement = document.getElementById("videoElement");
+      const placeholder = document.getElementById("placeholder");
+
+      startBtn.addEventListener("click", async () => {
+        try {
+          // 核心代码：请求获取屏幕媒体流
+          const stream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+              cursor: "always", // 是否显示鼠标
+              displaySurface: "monitor", // 提示优先选择显示器
+            },
+            audio: false, // 是否需要系统声音（注意：很多浏览器共享屏幕时不支持同时共享系统音频，除非共享标签页）
+          });
+
+          // 将流绑定到 video 标签
+          videoElement.srcObject = stream;
+          videoElement.style.display = "block";
+          placeholder.style.display = "none";
+
+          // 当用户点击浏览器自带的“停止共享”按钮时
+          stream.getVideoTracks()[0].onended = function () {
+            stopShare();
+          };
+        } catch (err) {
+          console.error("Error: " + err);
+          alert("用户取消了共享或浏览器不支持。");
+        }
+      });
+
+      function stopShare() {
+        const stream = videoElement.srcObject;
+        if (stream) {
+          const tracks = stream.getTracks();
+          tracks.forEach((track) => track.stop());
+          videoElement.srcObject = null;
+          videoElement.style.display = "none";
+          placeholder.style.display = "block";
+          placeholder.innerText = "共享已停止";
+        }
+      }
+    </script>
+  </body>
+</html>
