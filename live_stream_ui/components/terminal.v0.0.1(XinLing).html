@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap");
+
+      :root {
+        --nier-blue: #00e5ff;
+        --nier-dark: #0a1f25;
+        --nier-white: #e0f7fa;
+        --nier-alert: #ff3333;
+        --scan-line: rgba(0, 229, 255, 0.1);
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        background: transparent; /* OBS 透明背景关键 */
+        overflow: hidden;
+        font-family: "Share Tech Mono", monospace;
+        color: var(--nier-white);
+        user-select: none;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+
+      /* 主容器 */
+      .interface-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        background: linear-gradient(
+          135deg,
+          rgba(10, 31, 37, 0.85) 0%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+        border-left: 2px solid var(--nier-blue);
+        border-bottom: 2px solid var(--nier-blue);
+        clip-path: polygon(
+          0 0,
+          100% 0,
+          100% 85%,
+          90% 100%,
+          0 100%
+        ); /* 切角设计 */
+        padding: 8px;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* 顶部标题栏 */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+        padding-bottom: 3px;
+        margin-bottom: 5px;
+        font-size: 12px;
+        letter-spacing: 1px;
+      }
+      .header span {
+        text-shadow: 0 0 5px var(--nier-blue);
+      }
+      .blink {
+        animation: blinker 2.5s linear infinite;
+      }
+
+      /* 终端日志区域 */
+      .terminal-log {
+        flex-grow: 1;
+        font-size: 10px;
+        line-height: 1.3;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        opacity: 0.9;
+        text-shadow: 0 0 2px var(--nier-blue);
+        word-wrap: break-word;
+      }
+      .log-entry {
+        margin: 1px 0;
+      }
+      .log-entry.warning {
+        color: var(--nier-alert);
+      }
+      .log-entry.info {
+        color: var(--nier-white);
+      }
+      .cursor {
+        display: inline-block;
+        width: 6px;
+        height: 12px;
+        background: var(--nier-blue);
+        animation: blinker 1.5s step-end infinite;
+        vertical-align: middle;
+      }
+
+      /* 底部数据条 */
+      .footer-data {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        font-size: 8px;
+        color: var(--nier-blue);
+        margin-top: 3px;
+      }
+      .waveform {
+        display: flex;
+        align-items: flex-end;
+        height: 15px;
+        gap: 1px;
+      }
+      .bar {
+        width: 2px;
+        background: var(--nier-blue);
+        animation: wave 1.5s ease-in-out infinite;
+        opacity: 0.7;
+      }
+
+      /* 装饰性圆环 (模拟战术目镜) */
+      .decor-ring {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 30px;
+        height: 30px;
+        border: 1px dashed rgba(0, 229, 255, 0.4);
+        border-radius: 50%;
+        animation: spin 10s linear infinite;
+        pointer-events: none;
+      }
+      .decor-ring::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        border: 1px solid var(--nier-blue);
+        border-radius: 50%;
+        opacity: 0.5;
+      }
+
+      /* 扫描线效果 (CRT Feel) */
+      .scanlines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0),
+          rgba(255, 255, 255, 0) 50%,
+          rgba(0, 0, 0, 0.2) 50%,
+          rgba(0, 0, 0, 0.2)
+        );
+        background-size: 100% 4px;
+        pointer-events: none;
+        z-index: 10;
+        opacity: 0.3;
+      }
+
+      /* 动画定义 */
+      @keyframes blinker {
+        50% {
+          opacity: 0;
+        }
+      }
+      @keyframes spin {
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes wave {
+        0%,
+        100% {
+          height: 20%;
+        }
+        50% {
+          height: 100%;
+        }
+      }
+
+      /* 针对不同 bars 的延迟 */
+      .bar:nth-child(1) {
+        animation-duration: 0.6s;
+      }
+      .bar:nth-child(2) {
+        animation-duration: 0.8s;
+      }
+      .bar:nth-child(3) {
+        animation-duration: 0.5s;
+      }
+      .bar:nth-child(4) {
+        animation-duration: 0.7s;
+      }
+      .bar:nth-child(5) {
+        animation-duration: 0.9s;
+      }
+      .bar:nth-child(6) {
+        animation-duration: 0.4s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="interface-container">
+      <!-- 扫描线覆盖层 -->
+      <div class="scanlines"></div>
+
+      <!-- 装饰圆环 -->
+      <div class="decor-ring"></div>
+
+      <!-- 头部 -->
+      <div class="header">
+        <span>Id.<span id="operator-id">9S</span></span>
+        <span class="blink">● LIVE</span>
+      </div>
+
+      <!-- 日志区域 -->
+      <div class="terminal-log" id="log-area">
+        <!-- JS 将在此处插入日志 -->
+        <div class="log-entry info">> System initialized...</div>
+        <div class="log-entry info">> Connecting to Bunker...</div>
+        <div class="cursor"></div>
+      </div>
+
+      <!-- 底部数据 -->
+      <div class="footer-data">
+        <div>
+          <div>CPU: <span id="cpu-val">12</span>%</div>
+          <div>MEM: <span id="mem-val">402</span>MB</div>
+        </div>
+        <div class="waveform">
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 配置：在这里修改你的主播代号
+      document.getElementById("operator-id").innerText = "XinLing"; // 虚拟主播名字
+
+      const logArea = document.getElementById("log-area");
+      const cursor = document.querySelector(".cursor");
+
+      // 程序员专属的尼尔风日志
+      const messages = [
+        { text: "> Accessing Black Box...", type: "info" },
+        { text: "> 初始化 XinLing 虚拟形象...", type: "info" },
+        { text: "> Compiling logic modules...", type: "info" },
+        { text: "> 连接到 tsubasa studio 服务器...", type: "info" },
+        { text: "> Warning: Caffeine levels critical.", type: "warning" },
+        { text: "> 调试会话已启动 [主线程]", type: "info" },
+        { text: "> git pull origin master ... success", type: "info" },
+        { text: "> 分析观众数据模式...", type: "info" },
+        {
+          text: "> Error 404: Motivation not found (Retrying)",
+          type: "warning",
+        },
+        { text: "> 优化渲染管道...", type: "info" },
+        { text: "> Connection established with Host", type: "info" },
+        { text: "> 执行: coffee.exe --force", type: "info" },
+        { text: "> Scanning for bugs... 0 detected (Sus)", type: "warning" },
+        { text: "> 将意识上传到云端...", type: "info" },
+        { text: "> Build finished in 0.4s", type: "info" },
+        { text: "> 等待用户输入...", type: "info" },
+        { text: "> XinLing avatar status: Online", type: "info" },
+        { text: "> tsubasa studio 系统: 运行中", type: "info" },
+        { text: "> Loading virtual environment...", type: "info" },
+        { text: "> 同步直播数据...", type: "info" },
+        { text: "> Warning: Memory usage approaching limit", type: "warning" },
+        { text: "> 优化虚拟形象性能...", type: "info" },
+        { text: "> Connection to audience established", type: "info" },
+        { text: "> 准备就绪，开始直播", type: "info" },
+        { text: "> XinLing: Hello everyone!", type: "info" },
+        { text: "> tsubasa studio: System online", type: "info" },
+        { text: "> 分析聊天情绪...", type: "info" },
+        { text: "> Generating response...", type: "info" },
+        { text: "> 所有系统正常运行", type: "info" },
+        { text: "> 欢迎来到 XinLing 的直播间！", type: "info" },
+        { text: "> Thank you for your support!", type: "info" },
+        { text: "> 今天我们要聊点什么呢？", type: "info" },
+        { text: "> Virtual avatar system: Normal", type: "info" },
+        { text: "> 直播数据传输稳定", type: "info" },
+      ];
+
+      let msgIndex = 0;
+
+      function addLog() {
+        const msg = messages[msgIndex % messages.length];
+        const div = document.createElement("div");
+        div.className = `log-entry ${msg.type}`;
+        div.innerText = msg.text;
+
+        // 插入到光标之前
+        logArea.insertBefore(div, cursor);
+
+        // 保持只显示最后 6 行，避免溢出
+        const entries = logArea.querySelectorAll(".log-entry");
+        if (entries.length > 6) {
+          entries[0].remove();
+        }
+
+        msgIndex++;
+
+        // 随机时间间隔，模拟真实输入感
+        const nextTime = 1000 + Math.random() * 2000;
+        setTimeout(addLog, nextTime);
+      }
+
+      // 启动日志
+      setTimeout(addLog, 1000);
+
+      // 模拟 CPU/MEM 数值跳动
+      setInterval(() => {
+        document.getElementById("cpu-val").innerText =
+          Math.floor(Math.random() * 30) + 5;
+        document.getElementById("mem-val").innerText =
+          Math.floor(Math.random() * 200) + 300;
+      }, 2000);
+    </script>
+  </body>
+</html>

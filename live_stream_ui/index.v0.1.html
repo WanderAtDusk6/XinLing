@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟主播直播间</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #f0f0f0;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+        
+        .stream-area {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            min-height: 0;
+        }
+        
+        .video-container {
+            background-color: #111;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #333;
+        }
+        
+        .video-placeholder {
+            font-size: 24px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .stream-info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            padding: 20px;
+        }
+        
+        .stream-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .stream-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+        }
+        
+        .chat-panel {
+            background-color: #111;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #333;
+        }
+        
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .chat-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background-color: #1a1a1a;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .message-user {
+            font-weight: 600;
+            color: #4CAF50;
+            margin-right: 8px;
+        }
+        
+        .message-text {
+            color: #f0f0f0;
+        }
+        
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            background-color: #222;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+        
+        .bottom-bar {
+            background-color: #111;
+            border-top: 1px solid #333;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .control-btn {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .control-btn:hover {
+            background-color: #444;
+        }
+        
+        .control-btn-primary {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        .control-btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .gift-panel {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .gift-btn {
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 8px 12px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .gift-btn:hover {
+            background-color: #444;
+        }
+        
+        .gift-btn-highlight {
+            background-color: #ff9800;
+            border-color: #ff9800;
+        }
+        
+        .gift-btn-highlight:hover {
+            background-color: #f57c00;
+        }
+        
+        @media (max-width: 768px) {
+            .stream-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: 2fr 1fr;
+            }
+            
+            .bottom-bar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .controls {
+                justify-content: center;
+            }
+            
+            .gift-panel {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stream-area">
+            <div class="video-container">
+                <div class="video-placeholder">
+                    <p>虚拟主播画面区域</p>
+                    <p style="font-size: 14px; color: #888; margin-top: 10px;">这里将显示主播的视频流</p>
+                </div>
+                <div class="stream-info-overlay">
+                    <div class="stream-title">今晚聊点技术 | 虚拟主播的日常</div>
+                    <div class="stream-stats">
+                        <div class="stat-item">
+                            <div class="status-indicator"></div>
+                            <span>直播中</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>👁️ 1,234</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>❤️ 5,678</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>💬 99+</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-panel">
+                <div class="chat-header">
+                    <div class="chat-title">弹幕</div>
+                </div>
+                <div class="chat-messages">
+                    <div class="chat-message">
+                        <span class="message-user">观众1:</span>
+                        <span class="message-text">主播好厉害！</span>
+                    </div>
+                    <div class="chat-message">
+                        <span class="message-user">观众2:</span>
+                        <span class="message-text">这个技术点我一直没搞懂</span>
+                    </div>
+                    <div class="chat-message">
+                        <span class="message-user">观众3:</span>
+                        <span class="message-text">求教程链接</span>
+                    </div>
+                    <div class="chat-message">
+                        <span class="message-user">观众4:</span>
+                        <span class="message-text">主播声音好好听</span>
+                    </div>
+                    <div class="chat-message">
+                        <span class="message-user">观众5:</span>
+                        <span class="message-text">期待下一期内容</span>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" class="chat-input" placeholder="发送弹幕...">
+                </div>
+            </div>
+        </div>
+        
+        <div class="bottom-bar">
+            <div class="controls">
+                <button class="control-btn">关注</button>
+                <button class="control-btn control-btn-primary">分享</button>
+                <button class="control-btn">设置</button>
+            </div>
+            <div class="gift-panel">
+                <button class="gift-btn">🎁 礼物</button>
+                <button class="gift-btn gift-btn-highlight">💎 超级礼物</button>
+                <button class="gift-btn">⭐ 点赞</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 模拟实时数据更新
+            setInterval(function() {
+                const stats = document.querySelectorAll('.stream-stats .stat-item span');
+                const viewers = stats[1];
+                const likes = stats[2];
+                
+                const currentViewers = parseInt(viewers.textContent.replace('👁️ ', ''));
+                const newViewers = currentViewers + Math.floor(Math.random() * 10) - 5;
+                viewers.textContent = `👁️ ${newViewers > 0 ? newViewers : 0}`;
+                
+                const currentLikes = parseInt(likes.textContent.replace('❤️ ', ''));
+                const newLikes = currentLikes + Math.floor(Math.random() * 20);
+                likes.textContent = `❤️ ${newLikes}`;
+            }, 5000);
+            
+            // 模拟新弹幕
+            const chatMessages = document.querySelector('.chat-messages');
+            const chatInputs = [
+                '主播好棒！', 
+                '这个技巧太实用了', 
+                '感谢分享', 
+                '学到了', 
+                '期待下一期',
+                '主播声音好好听',
+                '这个游戏好玩吗？',
+                '求推荐设备',
+                '主播好可爱',
+                '加油！'
+            ];
+            
+            setInterval(function() {
+                const randomMessage = chatInputs[Math.floor(Math.random() * chatInputs.length)];
+                const randomUser = `观众${Math.floor(Math.random() * 1000)}`;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+                messageDiv.innerHTML = `
+                    <span class="message-user">${randomUser}:</span>
+                    <span class="message-text">${randomMessage}</span>
+                `;
+                
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // 保持最多显示20条消息
+                if (chatMessages.children.length > 20) {
+                    chatMessages.removeChild(chatMessages.firstChild);
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

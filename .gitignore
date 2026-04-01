@@ -1,3 +1,10 @@
+# my repo
+.draft/
+.history_test/
+### 
+/novel-helper/*
+### ----
+
 # Logs
 logs
 *.log

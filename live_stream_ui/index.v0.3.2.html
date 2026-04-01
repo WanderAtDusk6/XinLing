@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟主播直播间场景</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #f0f0f0;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .main-area {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 240px;
+            bottom: 80px;
+            background-color: rgba(17, 17, 17, 0.8);
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .screen-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .screen-placeholder {
+            font-size: 24px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .announcement-area {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 220px;
+            height: 250px;
+            background-color: rgba(17, 17, 17, 0.8);
+            border: 1px solid #333;
+        }
+        
+        .comment-area {
+            position: absolute;
+            top: 290px;
+            right: 20px;
+            width: 220px;
+            height: 250px;
+            background-color: rgba(17, 17, 17, 0.8);
+            border: 1px solid #333;
+        }
+        
+        .announcement-header {
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .announcement-content {
+            padding: 10px;
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        .comment-header {
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .comment-content {
+            padding: 10px;
+            height: calc(100% - 40px);
+            overflow-y: auto;
+        }
+        
+        .comment-item {
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        /* Markdown 样式 */
+        .markdown h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .markdown h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .markdown p {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .markdown ul, .markdown ol {
+            margin-left: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .markdown li {
+            margin-bottom: 4px;
+        }
+        
+        .markdown strong {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .markdown em {
+            font-style: italic;
+            color: #aaa;
+        }
+        
+        .bottom-section {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 240px;
+            height: 60px;
+            background-color: rgba(17, 17, 17, 0.8);
+            border: 1px solid #333;
+        }
+        
+        .section-header {
+            padding: 5px 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid #333;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .section-content {
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+        }
+        
+        .area-label {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #fff;
+            border: 1px solid #333;
+        }
+        
+        .main-area-label {
+            top: -30px;
+            left: 0;
+        }
+        
+        .comment-area-label {
+            top: -30px;
+            left: 0;
+        }
+        
+        .bottom-section-label {
+            top: -30px;
+            left: 0;
+        }
+        
+        .corner-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #666;
+            border: 1px solid #fff;
+        }
+        
+        .top-left {
+            top: -5px;
+            left: -5px;
+        }
+        
+        .top-right {
+            top: -5px;
+            right: -5px;
+        }
+        
+        .bottom-left {
+            bottom: -5px;
+            left: -5px;
+        }
+        
+        .bottom-right {
+            bottom: -5px;
+            right: -5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主区域（投屏幕/游戏区域） -->
+        <div class="main-area">
+            <div class="area-label main-area-label">投屏幕/游戏区域</div>
+            <div class="corner-handle top-left"></div>
+            <div class="corner-handle top-right"></div>
+            <div class="corner-handle bottom-left"></div>
+            <div class="corner-handle bottom-right"></div>
+            
+            <div class="screen-area">
+                <div class="screen-placeholder">
+                    <p>屏幕投影区域</p>
+                    <p style="font-size: 14px; color: #888; margin-top: 10px;">用于投放游戏、PPT或其他内容</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 公告区域 -->
+        <div class="announcement-area">
+            <div class="area-label comment-area-label">公告区域</div>
+            <div class="corner-handle top-left"></div>
+            <div class="corner-handle top-right"></div>
+            <div class="corner-handle bottom-left"></div>
+            <div class="corner-handle bottom-right"></div>
+            
+            <div class="announcement-header">ANNOUNCEMENT</div>
+            <div class="announcement-content markdown" id="announcement-content">
+                <p>加载公告中...</p>
+            </div>
+        </div>
+        
+        <!-- 评论区域 -->
+        <div class="comment-area">
+            <div class="area-label comment-area-label">弹幕区域</div>
+            <div class="corner-handle top-left"></div>
+            <div class="corner-handle top-right"></div>
+            <div class="corner-handle bottom-left"></div>
+            <div class="corner-handle bottom-right"></div>
+            
+            <div class="comment-header">COMMENT</div>
+            <div class="comment-content">
+                <div class="comment-item">观众1: 主播好厉害！</div>
+                <div class="comment-item">观众2: 这个游戏好玩吗？</div>
+                <div class="comment-item">观众3: 求教程链接</div>
+                <div class="comment-item">观众4: 主播操作好秀</div>
+                <div class="comment-item">观众5: 期待下一期</div>
+            </div>
+        </div>
+        
+        <!-- 底部信息区域 -->
+        <div class="bottom-section">
+            <div class="area-label bottom-section-label">信息展示区域</div>
+            <div class="corner-handle top-left"></div>
+            <div class="corner-handle top-right"></div>
+            <div class="corner-handle bottom-left"></div>
+            <div class="corner-handle bottom-right"></div>
+            
+            <div class="section-header">LIVE INFO</div>
+            <div class="section-content">
+                直播标题: 游戏直播 | 虚拟主播的日常
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 简单的Markdown解析器
+        function markdownToHtml(markdown) {
+            // 标题
+            markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            
+            // 粗体
+            markdown = markdown.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+            
+            // 斜体
+            markdown = markdown.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+            
+            // 无序列表
+            markdown = markdown.replace(/^- (.*$)/gim, '<li>$1</li>');
+            markdown = markdown.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            
+            // 有序列表
+            markdown = markdown.replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
+            markdown = markdown.replace(/(<li>.*<\/li>)/s, '<ol>$1</ol>');
+            
+            // 段落
+            markdown = markdown.replace(/^(?!<h|\s*<li|\s*<ul|\s*<ol)(.*$)/gim, '<p>$1</p>');
+            
+            // 空行
+            markdown = markdown.replace(/\n\s*\n/gim, '</p><p>');
+            
+            return markdown;
+        }
+        
+        // 公告内容（直接嵌入）
+        const announcementContent = `## 直播公告
+
+欢迎来到我的直播间！
+
+### 直播信息
+- **直播时间**：每天 20:00-22:00
+- **直播内容**：游戏、技术分享、聊天
+- **直播平台**：B站
+
+### 粉丝互动
+- **粉丝群**：123456789
+- **微博**：@虚拟主播
+- **B站**：虚拟主播
+
+### 最近计划
+1. 下周开始新游戏系列
+2. 技术分享：如何搭建直播环境
+3. 粉丝见面会筹备中
+
+感谢大家的支持！`;
+        
+        // 页面加载完成后解析公告
+        document.addEventListener('DOMContentLoaded', function() {
+            const html = markdownToHtml(announcementContent);
+            document.getElementById('announcement-content').innerHTML = html;
+        });
+    </script>
+</body>
+</html>ml>

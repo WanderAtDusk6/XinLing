@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟主播直播间场景</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #f0f0f0;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .main-area {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 240px;
+            bottom: 20px;
+            background-color: rgba(17, 17, 17, 0.8);
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .screen-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .screen-placeholder {
+            font-size: 24px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .right-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 220px;
+            bottom: 20px;
+            background-color: rgba(17, 17, 17, 0.8);
+            border: 1px solid #333;
+        }
+        
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+        }
+        
+        .carousel-container {
+            display: flex;
+            transition: transform 0.5s ease;
+        }
+        
+        .carousel-item {
+            flex: 0 0 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .carousel-item img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        
+        .carousel-item.text {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #666;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .carousel-dot.active {
+            background-color: #fff;
+        }
+        
+        .comment-area {
+            margin-top: 20px;
+            height: calc(100% - 320px);
+            padding: 10px;
+        }
+        
+        .comment-header {
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        
+        .comment-content {
+            height: calc(100% - 40px);
+            overflow-y: auto;
+        }
+        
+        .comment-item {
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        .area-label {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #fff;
+            border: 1px solid #333;
+        }
+        
+        .main-area-label {
+            top: -30px;
+            left: 0;
+        }
+        
+        .right-panel-label {
+            top: -30px;
+            left: 0;
+        }
+        
+        .corner-handle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #666;
+            border: 1px solid #fff;
+        }
+        
+        .top-left {
+            top: -5px;
+            left: -5px;
+        }
+        
+        .top-right {
+            top: -5px;
+            right: -5px;
+        }
+        
+        .bottom-left {
+            bottom: -5px;
+            left: -5px;
+        }
+        
+        .bottom-right {
+            bottom: -5px;
+            right: -5px;
+        }
+        
+        /* Markdown 样式 */
+        .markdown h1 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .markdown h2 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+        
+        .markdown p {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .markdown ul, .markdown ol {
+            margin-left: 20px;
+            margin-bottom: 8px;
+        }
+        
+        .markdown li {
+            margin-bottom: 4px;
+        }
+        
+        .markdown strong {
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .markdown em {
+            font-style: italic;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 主区域（投屏幕/游戏区域） -->
+        <div class="main-area">
+            <div class="area-label main-area-label">投屏幕/游戏区域</div>
+            <div class="corner-handle top-left"></div>
+            <div class="corner-handle top-right"></div>
+            <div class="corner-handle bottom-left"></div>
+            <div class="corner-handle bottom-right"></div>
+            
+            <div class="screen-area">
+                <div class="screen-placeholder">
+                    <p>屏幕投影区域</p>
+                    <p style="font-size: 14px; color: #888; margin-top: 10px;">用于投放游戏、PPT或其他内容</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <div class="area-label right-panel-label">右侧面板</div>
+            <div class="corner-handle top-left"></div>
+            <div class="corner-handle top-right"></div>
+            <div class="corner-handle bottom-left"></div>
+            <div class="corner-handle bottom-right"></div>
+            
+            <!-- 轮播区域 -->
+            <div class="carousel">
+                <div class="carousel-container" id="carousel-container">
+                    <!-- 图片项 -->
+                    <div class="carousel-item">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=virtual%20streamer%20logo%20minimalist%20design&image_size=square" alt="图片1">
+                    </div>
+                    <!-- 文本项 -->
+                    <div class="carousel-item text">
+                        <div class="markdown">
+                            <h2>直播公告</h2>
+                            <p>欢迎来到我的直播间！</p>
+                            <p>直播时间：每天 20:00-22:00</p>
+                            <p>直播内容：游戏、技术分享</p>
+                        </div>
+                    </div>
+                    <!-- 图片项 -->
+                    <div class="carousel-item">
+                        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=gaming%20streaming%20icon%20modern%20design&image_size=square" alt="图片2">
+                    </div>
+                    <!-- 文本项 -->
+                    <div class="carousel-item text">
+                        <div class="markdown">
+                            <h2>粉丝互动</h2>
+                            <p>粉丝群：123456789</p>
+                            <p>微博：@虚拟主播</p>
+                            <p>B站：虚拟主播</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- 轮播指示器 -->
+                <div class="carousel-dots" id="carousel-dots">
+                    <div class="carousel-dot active" data-index="0"></div>
+                    <div class="carousel-dot" data-index="1"></div>
+                    <div class="carousel-dot" data-index="2"></div>
+                    <div class="carousel-dot" data-index="3"></div>
+                </div>
+            </div>
+            
+            <!-- 评论区域 -->
+            <div class="comment-area">
+                <div class="comment-header">弹幕区域</div>
+                <div class="comment-content">
+                    <div class="comment-item">观众1: 主播好厉害！</div>
+                    <div class="comment-item">观众2: 这个游戏好玩吗？</div>
+                    <div class="comment-item">观众3: 求教程链接</div>
+                    <div class="comment-item">观众4: 主播操作好秀</div>
+                    <div class="comment-item">观众5: 期待下一期</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 轮播功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const carouselContainer = document.getElementById('carousel-container');
+            const carouselDots = document.getElementById('carousel-dots');
+            const dots = carouselDots.querySelectorAll('.carousel-dot');
+            const items = carouselContainer.querySelectorAll('.carousel-item');
+            const itemCount = items.length;
+            let currentIndex = 0;
+            
+            // 自动轮播
+            let autoSlideInterval = setInterval(nextSlide, 5000);
+            
+            // 切换到指定幻灯片
+            function goToSlide(index) {
+                currentIndex = index;
+                updateCarousel();
+            }
+            
+            // 下一张幻灯片
+            function nextSlide() {
+                currentIndex = (currentIndex + 1) % itemCount;
+                updateCarousel();
+            }
+            
+            // 更新轮播状态
+            function updateCarousel() {
+                // 移动容器
+                carouselContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
+                
+                // 更新指示器
+                dots.forEach((dot, index) => {
+                    if (index === currentIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+            
+            // 点击指示器切换幻灯片
+            dots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    goToSlide(index);
+                    
+                    // 重置自动轮播
+                    clearInterval(autoSlideInterval);
+                    autoSlideInterval = setInterval(nextSlide, 5000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
