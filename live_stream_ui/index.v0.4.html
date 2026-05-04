@@ -1,0 +1,1077 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>虚拟主播直播间场景</title>
+    <style>
+      /* 全局样式重置 */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* 基础样式 */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #000;
+        color: #f0f0f0;
+        line-height: 1.6;
+        overflow: hidden;
+      }
+
+      /* 主容器 */
+      .container {
+        width: 100vw;
+        height: 100vh;
+        position: relative;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+      }
+
+      /* 主区域（投屏幕/游戏区域） */
+      .main-area {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 240px;
+        bottom: 20px;
+        background-color: rgba(17, 17, 17, 0.8);
+        border: 1px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 屏幕区域 */
+      .screen-area {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 屏幕占位符 */
+      #screen-placeholder {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(17, 17, 17, 0.8);
+        font-size: 32px;
+        color: #666;
+        text-align: center;
+      }
+
+      /* 选择窗口按钮 */
+      .select-window-btn {
+        margin-top: 20px;
+        padding: 12px 24px;
+        background-color: #333;
+        border: 1px solid #555;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .select-window-btn:hover {
+        background-color: #444;
+        border-color: #777;
+      }
+
+      /* 屏幕视频 */
+      .screen-video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        z-index: 10;
+      }
+
+      /* 右侧面板 */
+      .right-panel {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 220px;
+        bottom: 20px;
+        background-color: rgba(17, 17, 17, 0.8);
+        border: 1px solid #333;
+      }
+
+      /* 轮播区域 */
+      .carousel {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+      }
+
+      /* 轮播容器 */
+      .carousel-container {
+        display: flex;
+        transition: transform 0.5s ease;
+      }
+
+      /* 轮播项 */
+      .carousel-item {
+        flex: 0 0 100%;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 轮播图片 */
+      .carousel-item img {
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+      }
+
+      /* 轮播文本项 */
+      .carousel-item.text {
+        padding: 20px;
+        text-align: center;
+      }
+
+      /* 科技风轮播项 */
+      .carousel-item.tech-style {
+        padding: 20px;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 蓝色科技风 */
+      .carousel-item.tech-blue {
+        background: linear-gradient(
+          135deg,
+          rgba(10, 31, 37, 0.85) 0%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+        border: 1px solid rgba(0, 240, 255, 0.3);
+      }
+
+      .tech-blue .tech-header h2 {
+        color: #00f0ff;
+        text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+      }
+
+      .tech-blue .tech-line {
+        background: linear-gradient(90deg, transparent, #00f0ff, transparent);
+      }
+
+      .tech-blue .tech-info p {
+        color: #b0e5ff;
+        text-shadow: 0 0 2px rgba(0, 240, 255, 0.3);
+      }
+
+      .tech-blue .tech-info em {
+        color: #00f0ff;
+        text-shadow: 0 0 3px rgba(0, 240, 255, 0.5);
+        font-style: italic;
+      }
+
+      .tech-blue .status-label {
+        font-size: 14px;
+        color: #00f0ff;
+        font-weight: bold;
+      }
+
+      .tech-blue .status-content {
+        font-size: 16px;
+        color: #b0e5ff;
+        font-weight: bold;
+        text-shadow: 0 0 3px rgba(0, 240, 255, 0.3);
+      }
+
+      .tech-blue .slogan {
+        font-size: 14px;
+        margin-top: 10px;
+      }
+
+      /* 紫色科技风 */
+      .carousel-item.tech-purple {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 10, 37, 0.85) 0%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+        border: 1px solid rgba(200, 100, 255, 0.3);
+      }
+
+      .tech-purple .tech-header h2 {
+        color: #c864ff;
+        text-shadow: 0 0 5px rgba(200, 100, 255, 0.5);
+      }
+
+      .tech-purple .tech-line {
+        background: linear-gradient(90deg, transparent, #c864ff, transparent);
+      }
+
+      .tech-purple .tech-info p {
+        color: #e0c8ff;
+        text-shadow: 0 0 2px rgba(200, 100, 255, 0.3);
+      }
+
+      /* 绿色科技风 */
+      .carousel-item.tech-green {
+        background: linear-gradient(
+          135deg,
+          rgba(10, 37, 10, 0.85) 0%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+        border: 1px solid rgba(0, 255, 136, 0.3);
+      }
+
+      .tech-green .tech-header h2 {
+        color: #00ff88;
+        text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
+      }
+
+      .tech-green .tech-line {
+        background: linear-gradient(90deg, transparent, #00ff88, transparent);
+      }
+
+      .tech-green .tech-info p {
+        color: #c8ffe0;
+        text-shadow: 0 0 2px rgba(0, 255, 136, 0.3);
+      }
+
+      .tech-green .tech-info {
+        text-align: left;
+      }
+
+      .tech-green .tech-info p {
+        display: flex;
+        align-items: center;
+        margin: 6px 0;
+      }
+
+      .tech-green .tech-info .checkbox {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #00ff88;
+        border-radius: 3px;
+        margin-right: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .tech-green .tech-info .checkbox.checked {
+        background-color: #00ff88;
+      }
+
+      .tech-green .tech-info .checkbox.checked::after {
+        content: "✓";
+        color: #0a1f25;
+        font-size: 12px;
+        font-weight: bold;
+      }
+
+      .tech-green .tech-info .task-level-1 {
+        margin-left: 20px;
+      }
+
+      .tech-green .tech-info .task-level-2 {
+        margin-left: 40px;
+      }
+
+      /* 红色科技风 */
+      .carousel-item.tech-red {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 10, 10, 0.85) 0%,
+          rgba(0, 0, 0, 0.6) 100%
+        );
+        border: 1px solid rgba(255, 100, 100, 0.3);
+      }
+
+      .tech-red .tech-header h2 {
+        color: #ff6464;
+        text-shadow: 0 0 5px rgba(255, 100, 100, 0.5);
+      }
+
+      .tech-red .tech-line {
+        background: linear-gradient(90deg, transparent, #ff6464, transparent);
+      }
+
+      .tech-red .tech-info p {
+        color: #ffc8c8;
+        text-shadow: 0 0 2px rgba(255, 100, 100, 0.3);
+      }
+
+      .tech-red .tech-info p:nth-child(1) {
+        color: #ff6464;
+        font-weight: bold;
+      }
+
+      .image-container {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      .image-container img {
+        border: 1px solid rgba(255, 100, 100, 0.3);
+        border-radius: 4px;
+        box-shadow: 0 0 10px rgba(255, 100, 100, 0.3);
+      }
+
+      .tech-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .tech-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .tech-header h2 {
+        font-size: 16px;
+        margin: 0;
+      }
+
+      .tech-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .tech-line {
+        height: 1px;
+        margin: 10px 0;
+      }
+
+      .tech-info {
+        font-size: 12px;
+        color: #f0f0f0;
+        overflow: hidden;
+        max-height: 180px;
+      }
+
+      .tech-info p {
+        margin: 4px 0;
+        line-height: 1.2;
+      }
+
+      .status-online {
+        color: #00ff88;
+        text-shadow: 0 0 3px rgba(0, 255, 136, 0.5);
+      }
+
+      /* 轮播指示器 */
+      .carousel-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      /* 轮播点 */
+      .carousel-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #666;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .carousel-dot.active {
+        background-color: #fff;
+      }
+
+      /* 评论区域 */
+      .comment-area {
+        position: relative;
+        margin-top: 20px;
+        height: calc(100% - 320px);
+        padding: 10px;
+      }
+
+      /* 评论头部 */
+      .comment-header {
+        height: 20px;
+        margin-bottom: 10px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+
+      /* 科技风分割线 */
+      .comment-header::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 50px;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #00f0ff, transparent);
+        transform: translateY(-50%);
+      }
+
+      /* 切换按钮 */
+      .toggle-btn {
+        padding: 2px 6px;
+        background-color: transparent;
+        border: 1px solid #00f0ff;
+        color: #00f0ff;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .toggle-btn:hover {
+        background-color: rgba(0, 240, 255, 0.1);
+      }
+
+      /* 内容区域 */
+      .comment-content,
+      .empty-content,
+      .custom-content,
+      .terminal-content {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      /* 终端内容 */
+      .terminal-content {
+        display: none;
+        height: calc(100% - 30px);
+        padding: 5px;
+      }
+
+      /* 控制按钮 */
+      .control-buttons {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-top: 1px solid rgba(0, 240, 255, 0.3);
+        gap: 8px;
+      }
+
+      /* 控制按钮样式 */
+      .control-btn {
+        padding: 2px 6px;
+        background-color: transparent;
+        border: 1px solid #00f0ff;
+        color: #00f0ff;
+        font-size: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .control-btn:hover {
+        background-color: rgba(0, 240, 255, 0.1);
+      }
+
+      /* 角落手柄 */
+      .corner-handle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #666;
+        border: 1px solid #fff;
+      }
+
+      /* 左上角 */
+      .top-left {
+        top: -5px;
+        left: -5px;
+      }
+
+      /* 右上角 */
+      .top-right {
+        top: -5px;
+        right: -5px;
+      }
+
+      /* 左下角 */
+      .bottom-left {
+        bottom: -5px;
+        left: -5px;
+      }
+
+      /* 右下角 */
+      .bottom-right {
+        bottom: -5px;
+        right: -5px;
+      }
+
+      /* Markdown 样式 */
+      .markdown h1 {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #fff;
+      }
+
+      .markdown h2 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #fff;
+      }
+
+      .markdown p {
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+
+      .markdown ul,
+      .markdown ol {
+        margin-left: 20px;
+        margin-bottom: 8px;
+      }
+
+      .markdown li {
+        margin-bottom: 4px;
+      }
+
+      .markdown strong {
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .markdown em {
+        font-style: italic;
+        color: #aaa;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- 主区域（投屏幕/游戏区域） -->
+      <div class="main-area">
+        <div class="corner-handle top-left"></div>
+        <div class="corner-handle top-right"></div>
+        <div class="corner-handle bottom-left"></div>
+        <div class="corner-handle bottom-right"></div>
+
+        <div class="screen-area">
+          <div class="screen-placeholder" id="screen-placeholder">
+            <p>屏幕投影区域</p>
+            <p style="font-size: 14px; color: #888; margin-top: 10px">
+              用于投放游戏、PPT或其他内容
+            </p>
+            <button id="share-screen-btn" class="select-window-btn">
+              共享屏幕
+            </button>
+          </div>
+          <video
+            id="screen-video"
+            class="screen-video"
+            autoplay
+            playsinline
+            style="display: none"
+          ></video>
+        </div>
+      </div>
+
+      <!-- 右侧面板 -->
+      <div class="right-panel">
+        <div class="corner-handle top-left"></div>
+        <div class="corner-handle top-right"></div>
+        <div class="corner-handle bottom-left"></div>
+        <div class="corner-handle bottom-right"></div>
+
+        <!-- 轮播区域 -->
+        <div class="carousel">
+          <div class="carousel-container" id="carousel-container">
+            <!-- 科技风项1 - 蓝色 -->
+            <div class="carousel-item tech-style tech-blue">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>长期企划: 关于主包</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>
+                      <span class="status-label"></span>
+                      <!-- 当前标题/直播内容 -->
+                      <span class="status-content">[日常+互动] AI心翎 </span>
+                      <br />
+                      <span class="status-content">[编程+其他] 工具人</span>
+                      <br />
+                      <!-- <span class="status-content"
+                        >从零开始, 打造AI vtuber</span
+                      > -->
+                    </p>
+                    <p>---</p>
+                    <p>当前阶段工具人代播</p>
+                    <p>---</p>
+                    <p class="slogan"><em>"Fake it till you make it"</em></p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div>
+            <!-- 科技风项2 - 紫色 -->
+            <!-- <div class="carousel-item tech-style tech-purple">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>当前直播: 杀戮尖塔2</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>[游戏] 随机角色进阶(不玩鸡煲)</p>
+                    <p>问号发育，好牌多拿！</p>
+
+                    <p>--- 主包日记 ---</p>
+                    <p>4月8日：打牌。</p>
+                    <p>4月9日：打牌。</p>
+                    <p>
+                      4月10日：主包啊主包！你怎么能如此堕落！先前订下的学习计划你都忘了吗？
+                    </p>
+                    <p>4月11日：打牌。</p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div> -->
+            <!-- 科技风项2 - 紫色 -->
+            <div class="carousel-item tech-style tech-purple">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>当前直播: 鸣潮3.3剧情</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>剧透了剧透了，</p>
+                    <p>没过剧情的kg出去</p>
+                    <p>---</p>
+                    <p>游戏太多了，</p>
+                    <p>玩不完根本玩不完</p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div>
+            <!-- 公告  -->
+            <!-- <div class="carousel-item tech-style tech-purple">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>当前直播: 异环</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>不知道，听说有朋友费我就来了</p>
+                    <p>--- 配置 ---</p>
+                    <p>[台式-古董级] R5 + A卡: RX590</p>
+                    <p>[笔记本] U9 + N卡: RTX5060</p>
+                    <p>--- 谜之推流方式 ---</p>
+                    <p>
+                      台式[游戏] ==(远程投屏)=> <br />
+                      笔记本[直播or游戏] ==> B站
+                    </p>
+                    <p>---</p>
+                    <p>至本月底，“完美世界”收益的3%</p>
+                    <p>将用于“异环”氪金🤗</p>
+                    <p>咦，怎么是负数😅😅？</p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div> -->
+            <!-- 科技风项2 - 紫色 -->
+            <!-- <div class="carousel-item tech-style tech-purple">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>当前直播: 随便看看</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>-- --</p>
+                    <p>1.看看字节的 deerflow</p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div> -->
+            <!-- 科技风项2 - 紫色 -->
+            <!-- <div class="carousel-item tech-style tech-purple">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>当前直播: 学习k8s</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>-- 定义 --</p>
+                    <p>&gt; 时间限制？8/16/24h</p>
+                    <p>| 试试...32h解决😭😭😭</p>
+                    <p>&gt; 怎么才算`学会`？（主包视角）</p>
+                    <p>1. [最小实现] 跑通 `quick-start`</p>
+                    <p>2. [框架概念] 知道怎么查 `reference`</p>
+                    <p>-- 其他要求 --</p>
+                    <p>只吃官方文档 | 可提问拷打主包</p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div> -->
+            <!-- <div class="carousel-item tech-style tech-purple">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>当前直播: claude code</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <p>-- 众所周知 --</p>
+                    <p>&gt; 果然，好教程要的是：</p>
+                    <p>1. 废话少</p>
+                    <p>2. 小章节</p>
+                    <p>3. 方便实践</p>
+                    <p>4. 还有高质量！</p>
+                    <p>-- 当前教程链接 --</p>
+                    <p>https://github.com/shareAI-lab/learn-claude-code</p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div> -->
+            <!-- 科技风项3 - 绿色 -->
+            <div class="carousel-item tech-style tech-green">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>今日直播目标</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <!-- <p><span class="checkbox"></span>[游戏] 杀戮尖塔2</p>
+                    <p class="task-level-1">
+                      <span class="checkbox"></span>通关1次(0/1) or
+                      <br />死2次(0/2) <br />结算: 主包是糕手/区
+                    </p> -->
+                    <p><span class="checkbox"></span>[游戏] 鸣潮3.3</p>
+                    <!-- <p><span class="checkbox"></span>[学习] k8s小学习</p>
+                    <p class="task-level-1">
+                      <span class="checkbox checked"></span>+27+1.75h
+                    </p>
+                    <p class="task-level-1">
+                      <span class="checkbox"></span>时间进度：28.75/24h
+                    </p> -->
+
+                    <!-- <p><span class="checkbox"></span>[学习] learn CC</p> -->
+                    <!-- <p><span class="checkbox"></span>[学习] learn CC</p>
+                    <p class="task-level-1">
+                      <span class="checkbox checked"></span>
+                      [进度] s01.agent-loop<br />~s11.autonomous-agents
+                    </p>
+                    <p class="task-level-1">
+                      <span class="checkbox"></span>
+                      s12.worktree-task-isolation
+                    </p> -->
+                    <!-- <p><span class="checkbox"></span>[游戏] 异环</p>
+                    <p class="task-level-1">
+                      <span class="checkbox"></span>主线，观光，打工
+                    </p> -->
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div>
+            <!-- 科技风项4 - 红色 -->
+            <div class="carousel-item tech-style tech-red">
+              <div class="tech-content">
+                <div class="tech-header">
+                  <h2>Ciallo~(∠・ω< )⌒★</h2>
+                </div>
+                <div class="tech-body">
+                  <div class="tech-line"></div>
+                  <div class="tech-info">
+                    <div class="image-container">
+                      <!-- src="./character_sprite/XinLing.v2.olm.jpg" -->
+                      <img
+                        src="../character_sprite/XinLing.v2.olm.jpg"
+                        alt="XinLing"
+                        style="
+                          max-width: 100%;
+                          max-height: 120px;
+                          object-fit: contain;
+                        "
+                      />
+                    </div>
+                    <p style="text-align: center">
+                      vup: 心翎XinLing (号不创了)
+                    </p>
+                  </div>
+                  <div class="tech-line"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 轮播指示器 -->
+          <div class="carousel-dots" id="carousel-dots">
+            <div class="carousel-dot active" data-index="0"></div>
+            <div class="carousel-dot" data-index="1"></div>
+            <div class="carousel-dot" data-index="2"></div>
+            <div class="carousel-dot" data-index="3"></div>
+          </div>
+        </div>
+
+        <!-- 评论区域 -->
+        <div class="comment-area">
+          <div class="comment-header">
+            <!-- 切换按钮已移除 -->
+          </div>
+
+          <div
+            class="terminal-content"
+            id="terminal-content"
+            style="display: block"
+          >
+            <!-- 终端组件将在这里加载 -->
+          </div>
+          <!-- 控制按钮 -->
+          <div class="control-buttons">
+            <button id="carousel-toggle-btn" class="control-btn">
+              [固定跑马灯]
+            </button>
+            <button id="hide-terminal-btn" class="control-btn">
+              [隐藏终端]
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // DOM 加载完成后执行
+      document.addEventListener("DOMContentLoaded", function () {
+        // 轮播功能
+        initCarousel();
+
+        // 屏幕共享功能
+        initScreenShare();
+
+        // 初始化弹幕区域
+        initCommentArea();
+      });
+
+      // 初始化轮播功能
+      function initCarousel() {
+        const carouselContainer = document.getElementById("carousel-container");
+        const carouselDots = document.getElementById("carousel-dots");
+        const dots = carouselDots.querySelectorAll(".carousel-dot");
+        const items = carouselContainer.querySelectorAll(".carousel-item");
+        const itemCount = items.length;
+        let currentIndex = 0;
+        // 自动轮播
+        let autoSlideInterval = setInterval(nextSlide, 8000);
+        let isPaused = false;
+
+        // 切换到指定幻灯片
+        function goToSlide(index) {
+          currentIndex = index;
+          updateCarousel();
+        }
+
+        // 下一张幻灯片
+        function nextSlide() {
+          if (!isPaused) {
+            currentIndex = (currentIndex + 1) % itemCount;
+            updateCarousel();
+          }
+        }
+
+        // 更新轮播状态
+        function updateCarousel() {
+          // 移动容器
+          carouselContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+          // 更新指示器
+          dots.forEach((dot, index) => {
+            if (index === currentIndex) {
+              dot.classList.add("active");
+            } else {
+              dot.classList.remove("active");
+            }
+          });
+        }
+
+        // 点击指示器切换幻灯片
+        dots.forEach((dot) => {
+          dot.addEventListener("click", function () {
+            const index = parseInt(this.getAttribute("data-index"));
+            goToSlide(index);
+
+            // 重置自动轮播
+            if (!isPaused) {
+              clearInterval(autoSlideInterval);
+              autoSlideInterval = setInterval(nextSlide, 8000);
+            }
+          });
+        });
+
+        // 固定按钮功能
+        const carouselToggleBtn = document.getElementById(
+          "carousel-toggle-btn",
+        );
+        if (carouselToggleBtn) {
+          carouselToggleBtn.addEventListener("click", function () {
+            isPaused = !isPaused;
+            if (isPaused) {
+              clearInterval(autoSlideInterval);
+              this.textContent = "[播放跑马灯]";
+            } else {
+              autoSlideInterval = setInterval(nextSlide, 8000);
+              this.textContent = "[固定跑马灯]";
+            }
+          });
+        }
+      }
+
+      // 初始化屏幕共享功能
+      function initScreenShare() {
+        const shareScreenBtn = document.getElementById("share-screen-btn");
+        const screenVideo = document.getElementById("screen-video");
+        const screenPlaceholder = document.getElementById("screen-placeholder");
+        let mediaStream = null;
+
+        // 共享屏幕
+        shareScreenBtn.addEventListener("click", async function () {
+          try {
+            // 使用 getDisplayMedia API 请求屏幕共享
+            mediaStream = await navigator.mediaDevices.getDisplayMedia({
+              video: {
+                cursor: "always",
+                displaySurface: "monitor",
+              },
+              audio: false,
+            });
+
+            // 将流设置到视频元素
+            screenVideo.srcObject = mediaStream;
+            screenVideo.style.display = "block";
+
+            // 隐藏占位符
+            screenPlaceholder.style.display = "none";
+
+            // 更改按钮文本为停止共享
+            shareScreenBtn.textContent = "停止共享";
+
+            // 监听流结束事件
+            mediaStream
+              .getVideoTracks()[0]
+              .addEventListener("ended", function () {
+                stopScreenShare();
+              });
+          } catch (error) {
+            console.error("屏幕共享失败:", error);
+            alert("屏幕共享失败: " + error.message);
+          }
+        });
+
+        // 停止屏幕共享
+        function stopScreenShare() {
+          if (mediaStream) {
+            mediaStream.getTracks().forEach((track) => track.stop());
+            mediaStream = null;
+          }
+
+          // 显示占位符
+          screenPlaceholder.style.display = "flex";
+          screenPlaceholder.style.flexDirection = "column";
+          screenPlaceholder.style.alignItems = "center";
+          screenPlaceholder.style.justifyContent = "center";
+
+          // 隐藏视频元素
+          screenVideo.style.display = "none";
+          screenVideo.srcObject = null;
+
+          // 更改按钮文本为共享屏幕
+          shareScreenBtn.textContent = "共享屏幕";
+        }
+      }
+
+      // 加载终端组件
+      function loadTerminalComponent() {
+        const terminalContent = document.getElementById("terminal-content");
+        // 通过 iframe 加载终端组件
+        const terminalIframe = document.createElement("iframe");
+        terminalIframe.src = "components/terminal.v0.0.1(XinLing).html";
+        terminalIframe.style.width = "100%";
+        terminalIframe.style.height = "100%";
+        terminalIframe.style.border = "none";
+        terminalIframe.style.backgroundColor = "transparent";
+
+        // 清空终端内容区域
+        terminalContent.innerHTML = "";
+        // 添加 iframe
+        terminalContent.appendChild(terminalIframe);
+      }
+
+      // 初始化弹幕区域
+      function initCommentArea() {
+        // 默认加载终端组件
+        loadTerminalComponent();
+
+        // 隐藏终端按钮功能
+        const hideTerminalBtn = document.getElementById("hide-terminal-btn");
+        const terminalContent = document.getElementById("terminal-content");
+        let terminalVisible = true;
+
+        if (hideTerminalBtn) {
+          hideTerminalBtn.addEventListener("click", function () {
+            terminalVisible = !terminalVisible;
+            if (terminalVisible) {
+              terminalContent.style.display = "block";
+              this.textContent = "[隐藏终端]";
+            } else {
+              terminalContent.style.display = "none";
+              this.textContent = "[显示终端]";
+            }
+          });
+        }
+      }
+    </script>
+  </body>
+</html>
