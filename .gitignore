@@ -3,7 +3,12 @@
 .history_test/
 ### 
 /novel-helper/*
+
+
 ### ----
+
+# python
+**/__pycache__/
 
 # Logs
 logs

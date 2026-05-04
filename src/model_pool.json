@@ -1,0 +1,9 @@
+{
+  "model_pool": {
+    "qwen_3_6": "qwen/qwen3.6-plus:free",
+    "glm_4_5": "z-ai/glm-4.5-air:free",
+    "llama_3_3": "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen_3_coder": "qwen/qwen3-coder:free"
+  },
+  "default_model": "qwen_3_6"
+}
