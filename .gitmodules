@@ -1,0 +1,3 @@
+[submodule "live_stream_frontend"]
+	path = live_stream_frontend
+	url = https://github.com/WanderAtDusk6/live_stream_frontend
